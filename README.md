@@ -7,7 +7,7 @@ This is a proof of concept tool for abusing the logrotate functionality in tcpdu
 Download and build geezip:
 
 ```
-$ go install github.com/klustic/geezip
+$ go get github.com/klustic/geezip
 ```
 
 ## Usage
