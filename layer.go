@@ -34,8 +34,6 @@ func (m GeeZipLayer) LayerPayload() []byte {
 	return m.payload
 }
 
-// Now implement a decoder... this one strips off the first 4 bytes of the
-// packet.
 func decodeGeeZipLayer(data []byte, p gopacket.PacketBuilder) error {
 	var layer GeeZipLayer
 	layer.TriggerFlag = data[0:8]
